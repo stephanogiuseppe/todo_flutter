@@ -13,6 +13,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  final _toDoController = TextEditingController();
   List _toDo = [];
 
   @override
@@ -35,6 +36,7 @@ class _HomeState extends State<Home> {
                       labelText: 'New task',
                       labelStyle: TextStyle(color: Colors.purple),
                     ),
+                    controller: _toDoController,
                   ),
                 ),
 
@@ -42,11 +44,37 @@ class _HomeState extends State<Home> {
                   color: Colors.purple,
                   child: Text('ADD'),
                   textColor: Colors.white,
-                  onPressed: () {},
+                  onPressed: _addToDoTask,
                 )
               ],
             ),
-          )
+          ),
+
+          Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.only(top: 10.0),
+              itemCount: _toDo.length,
+              itemBuilder: (context, index) {
+                return CheckboxListTile(
+                  title: Text(_toDo[index]['title']),
+                  value: _toDo[index]['ok'],
+                  checkColor: Colors.green,
+                  activeColor: Colors.transparent,
+                  secondary: CircleAvatar(
+                    foregroundColor: _toDo[index]['ok'] ? Colors.green : Colors.red,
+                    child: Icon(
+                      _toDo[index]['ok'] ? Icons.check : Icons.warning
+                    ),
+                  ),
+                  onChanged: (c) {
+                    setState(() {
+                      _toDo[index]['ok'] = c;
+                    });
+                  },
+                );
+              },
+            ),
+          ),
         ],
       )
     );
@@ -70,5 +98,15 @@ class _HomeState extends State<Home> {
     } catch (e) {
       return null;
     }
+  }
+
+  void _addToDoTask() {
+    setState(() {
+      Map<String, dynamic> task = Map();
+      task['title'] = _toDoController.text;
+      task['ok'] = false;
+      _toDoController.text = '';
+      _toDo.add(task);
+    });
   }
 }
