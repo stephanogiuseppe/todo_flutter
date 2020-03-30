@@ -5,6 +5,15 @@ import 'package:path_provider/path_provider.dart';
 
 void main() => runApp(MaterialApp(
   home: Home(),
+  theme: ThemeData(
+    primaryColor: Colors.purple,
+    fontFamily: 'Georgia',
+    textTheme: TextTheme(
+      headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
+      title: TextStyle(fontSize: 36.0, fontStyle: FontStyle.italic),
+      body1: TextStyle(fontSize: 14.0, fontFamily: 'Hind'),
+    ),
+  ),
 ));
 
 class Home extends StatefulWidget {
