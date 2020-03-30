@@ -15,6 +15,8 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final _toDoController = TextEditingController();
   List _toDo = [];
+  Map<String, dynamic> _lastRemoved;
+  int _lastRemovedPosition;
 
   @override
   void initState() {
@@ -65,26 +67,7 @@ class _HomeState extends State<Home> {
             child: ListView.builder(
               padding: EdgeInsets.only(top: 10.0),
               itemCount: _toDo.length,
-              itemBuilder: (context, index) {
-                return CheckboxListTile(
-                  title: Text(_toDo[index]['title']),
-                  value: _toDo[index]['ok'],
-                  checkColor: Colors.green,
-                  activeColor: Colors.transparent,
-                  secondary: CircleAvatar(
-                    foregroundColor: _toDo[index]['ok'] ? Colors.green : Colors.red,
-                    child: Icon(
-                      _toDo[index]['ok'] ? Icons.check : Icons.warning
-                    ),
-                  ),
-                  onChanged: (c) {
-                    setState(() {
-                      _toDo[index]['ok'] = c;
-                      _saveData();
-                    });
-                  },
-                );
-              },
+              itemBuilder: buildItem,
             ),
           ),
         ],
@@ -121,5 +104,66 @@ class _HomeState extends State<Home> {
       _toDo.add(task);
       _saveData();
     });
+  }
+
+  Widget buildItem(BuildContext context, int index) {
+    return Dismissible(
+      key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
+      background: Container(
+        color: Colors.red,
+        child: Align(
+          alignment: Alignment(-0.9, 0.0),
+          child: Icon(Icons.delete, color: Colors.white,),
+        ),
+      ),
+      direction: DismissDirection.startToEnd,
+      child: CheckboxListTile(
+        title: Text(_toDo[index]['title']),
+        value: _toDo[index]['ok'],
+        checkColor: Colors.green,
+        activeColor: Colors.transparent,
+        secondary: CircleAvatar(
+          foregroundColor: _toDo[index]['ok'] ? Colors.green : Colors.red,
+          child: Icon(
+              _toDo[index]['ok'] ? Icons.check : Icons.warning
+          ),
+        ),
+        onChanged: (c) {
+          setState(() {
+            _toDo[index]['ok'] = c;
+            _saveData();
+          });
+        },
+      ),
+      onDismissed: (direction) {
+        setState(() {
+          _lastRemoved = Map.from(_toDo[index]);
+          _lastRemovedPosition = index;
+          _toDo.removeAt(index);
+
+          _saveData();
+
+          final snackBar = undoRemoved();
+
+          Scaffold.of(context).showSnackBar(snackBar);
+        });
+      },
+    );
+  }
+
+  SnackBar undoRemoved() {
+    return SnackBar(
+      content: Text('Removed "${_lastRemoved["title"]}" task'),
+      action: SnackBarAction(
+        label: 'Undo',
+        onPressed: () {
+          setState(() {
+            _toDo.insert(_lastRemovedPosition, _lastRemoved);
+            _saveData();
+          });
+        },
+      ),
+      duration: Duration(seconds: 2),
+    );
   }
 }
